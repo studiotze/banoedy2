@@ -1,0 +1,1307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<krpano version="1.19">
+
+<!-- ********** -->
+<!-- Doble click -->
+<!-- id : doubleclick -->
+<!-- ********** -->
+
+  <plugin name="doubleclick" url.flash="%FIRSTXML%/graphics/doubleclick/fieldofview_dc.swf" url.html5="%FIRSTXML%/graphics/doubleclick/dctouch.min.js" keep="true" ondblclick="doubleclick_ondoubleclick();"/>
+  <action name="doubleclick_ondoubleclick">switchFullscreen();
+
+
+  </action>
+
+<!-- ********* -->
+<!-- Gyroscope -->
+<!-- ********* -->
+
+
+
+<plugin name="gyroscope"
+        url="%FIRSTXML%/graphics/gyro2.js"
+        keep="true"
+        devices="no-desktop.and.html5"
+
+        onunavailable="checkGyroUnavailable();"
+        sensor_mode="1"
+        friction="auto"
+        autocalibration="true"
+        touch_mode="full"
+        onavailable="delayedcall(1, checkGyroAvailability(););"
+        enabled="false"
+        activated="false"
+        />
+
+<events name="gyroscopeEvents" onnewpano="planarGyroscopeTest();" keep="true" />
+
+<action name="planarGyroscopeTest">
+  if(plugin[gyroscope],
+          if(scene[get(xml.scene)].full360,
+            set(sceneisfull360, false);
+            sub(viewhfov, panoview.hmax, panoview.hmin);
+            if (viewhfov == 360,
+              sub(viewvfov, panoview.vmax, panoview.vmin);
+              if (viewvfov == 180,
+                set(sceneisfull360, true);
+              );
+            );
+            if (sceneisfull360,
+              set(plugin[gyroscope].camroll, true);
+            ,
+              set(plugin[gyroscope].camroll, false);
+            );
+          ,
+            set(plugin[gyroscope].camroll, false);
+          );
+  );
+</action>
+
+<action name="changeGyroscopeState">
+  if(plugin[gyroscope],
+    if (plugin[gyroscope].isavailable,
+        if(%1,
+          set(plugin[gyroscope].activated,true);
+        ,
+          set(plugin[gyroscope].activated,false);
+        );
+        if (%1 != plugin[gyroscope].enabled,
+          if(plugin[gyroscope].activated,
+            switch(plugin[gyroscope].enabled);
+          ,
+            set(plugin[gyroscope].enabled, false);
+          );
+          if (plugin[gyroscope].enabled, events.dispatch(ongyroscopeon);, events.dispatch(ongyroscopeoff););
+        );
+    );
+  );
+</action>
+
+<action name="checkGyroAvailability">
+  if(plugin[gyroscope],
+    if (plugin[gyroscope].isavailable,
+      ifnot(tour_firstlittleplanet,
+        
+        switch(plugin[gyroscope].enabled);
+        set(plugin[gyroscope].activated,true);
+        
+        set(tour_gyroscopedevices, true);
+        events.dispatch(ongyroscopeavailable);
+      ,
+        delayedcall(1, checkGyroAvailability(););
+      );
+    ,
+      set(tour_gyroscopedevices, false);
+    );
+    if (plugin[gyroscope].enabled, events.dispatch(ongyroscopeon);, events.dispatch(ongyroscopeoff););
+  ,
+    checkGyroUnavailable();
+  );
+</action>
+
+<action name="checkGyroUnavailable">
+  set(plugin[gyroscope].activated, false);
+  set(plugin[gyroscope].enabled, false);
+  set(tour_gyroscopedevices, false);
+  events.dispatch(ongyroscopeunavailable);
+</action>
+
+<!-- ********** -->
+<!-- Acoplado de miniaturas y barra de control -->
+<!-- id : controlBar_dockedThumbnails -->
+<!-- ********** -->
+
+<krpano controlBar_dockedThumbnailsbarbuilt="false" controlBar_dockedThumbnailsIsOpened="false" />
+
+<events name="controlBar_dockedThumbnailsbarevents" 
+	onxmlcomplete="controlBar_dockedThumbnailsbuildMenuBar();"
+
+
+	
+	keep="true"/>
+
+
+
+<action name="controlBar_dockedThumbnailsbuildMenuBar">
+	ifnot (controlBar_dockedThumbnailsbarbuilt, controlBar_dockedThumbnailsbuildMenu(); set(controlBar_dockedThumbnailsbarbuilt, true););
+</action>
+
+
+
+<action name="controlBar_dockedThumbnailsbuildMenu">
+	
+    set(controlBar_dockedThumbnailsbutton_pos, 0);
+    set(layer[controlBar_dockedThumbnailsbtn_hidecontrols].x, get(controlBar_dockedThumbnailsbutton_pos));
+    inc(controlBar_dockedThumbnailsbutton_pos, 36);
+
+
+      if (device.desktop,
+        set(layer[controlBar_dockedThumbnailsbtn_display_help].x, get(controlBar_dockedThumbnailsbutton_pos));
+        
+        set(layer[controlBar_dockedThumbnailsbtn_close_help].x  , get(controlBar_dockedThumbnailsbutton_pos));
+        
+        inc(controlBar_dockedThumbnailsbutton_pos, 36);
+      );
+
+      if (device.fullscreensupport,
+        set(layer[controlBar_dockedThumbnailsbtn_openfs].x, get(controlBar_dockedThumbnailsbutton_pos));
+        set(layer[controlBar_dockedThumbnailsbtn_closefs].x, get(controlBar_dockedThumbnailsbutton_pos));
+        inc(controlBar_dockedThumbnailsbutton_pos, 36);
+      );
+
+
+
+
+      set(layer[controlBar_dockedThumbnailsbtn_autotour_on].x , get(controlBar_dockedThumbnailsbutton_pos));
+      
+      set(layer[controlBar_dockedThumbnailsbtn_autotour_off].x, get(controlBar_dockedThumbnailsbutton_pos));
+      
+      inc(controlBar_dockedThumbnailsbutton_pos, 36);
+
+
+      if (device.desktop,
+        set(layer[controlBar_dockedThumbnailsbtn_ctrlmode_drag_to].x, get(controlBar_dockedThumbnailsbutton_pos));
+        
+        set(layer[controlBar_dockedThumbnailsbtn_ctrlmode_move_to].x, get(controlBar_dockedThumbnailsbutton_pos));
+        
+        inc(controlBar_dockedThumbnailsbutton_pos, 36);
+      );
+
+
+
+
+      if(plugin[gyroscope],
+        set(controlBar_dockedThumbnailsDisplayGyroscopeButton, false);
+        if (device.tablet, set(controlBar_dockedThumbnailsDisplayGyroscopeButton, true););
+        if (device.mobile, set(controlBar_dockedThumbnailsDisplayGyroscopeButton, true););
+        if(controlBar_dockedThumbnailsDisplayGyroscopeButton,
+          set(layer[controlBar_dockedThumbnailsbtn_gyroscope_on].x, get(controlBar_dockedThumbnailsbutton_pos));
+          
+          set(layer[controlBar_dockedThumbnailsbtn_gyroscope_off].x, get(controlBar_dockedThumbnailsbutton_pos));
+          
+          set(layer[controlBar_dockedThumbnailsbtn_gyroscope_not].x, get(controlBar_dockedThumbnailsbutton_pos));
+          
+          inc(controlBar_dockedThumbnailsbutton_pos, 36);
+        );
+      );
+
+
+      if (device.desktop,
+        set(layer[controlBar_dockedThumbnailsbtn_right].x, get(controlBar_dockedThumbnailsbutton_pos));
+        
+        inc(controlBar_dockedThumbnailsbutton_pos, 36);
+
+        set(layer[controlBar_dockedThumbnailsbtn_left].x, get(controlBar_dockedThumbnailsbutton_pos));
+        
+        inc(controlBar_dockedThumbnailsbutton_pos, 36);
+      );
+
+      if (device.desktop,
+        set(layer[controlBar_dockedThumbnailsbtn_down].x, get(controlBar_dockedThumbnailsbutton_pos));
+        
+        inc(controlBar_dockedThumbnailsbutton_pos, 36);
+
+        set(layer[controlBar_dockedThumbnailsbtn_up].x, get(controlBar_dockedThumbnailsbutton_pos));
+        
+        inc(controlBar_dockedThumbnailsbutton_pos, 36);
+      );
+
+      if (device.desktop,
+        set(layer[controlBar_dockedThumbnailsbtn_out].x, get(controlBar_dockedThumbnailsbutton_pos));
+        inc(controlBar_dockedThumbnailsbutton_pos, 36);
+        set(layer[controlBar_dockedThumbnailsbtn_in].x, get(controlBar_dockedThumbnailsbutton_pos));
+        inc(controlBar_dockedThumbnailsbutton_pos, 36);
+      );
+
+
+
+
+	
+	
+	
+</action>
+
+<events name="controlBar_dockedThumbnailsStartTourEvents" onTourStart="controlBar_dockedThumbnailsCallOnStartTour();" keep="true" />
+
+<action name="controlBar_dockedThumbnailsCallOnStartTour">
+	
+	controlBar_dockedThumbnailsshowMenuControls();
+</action>
+
+
+
+
+    <layer name="controlBar_dockedThumbnails_bg"
+           keep="true"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/footer.png"
+           zorder="4"
+           width="100%"
+           align="bottomleft"
+           x="0"
+           visible="false" />
+
+
+    <style name="controlBar_dockedThumbnails_btn_style_on_bg"
+           keep="true"
+           parent="controlBar_dockedThumbnails_bg"
+           crop="0|48|48|48"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_bg.png"
+           align="bottomright"
+           height="36"
+           width="36"
+           alpha="0.3"
+           y="12"
+           zorder="0"
+           />
+    <style name="controlBar_dockedThumbnails_btn_style_on_bg_off"
+           keep="true"
+           parent="controlBar_dockedThumbnails_bg"
+           crop="0|0|48|48"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_bg.png"
+           align="bottomright"
+           height="36"
+           width="36"
+           alpha="0.3"
+           y="12"
+           zorder="0"
+           />
+
+    <style name="controlBar_dockedThumbnails_btn_down_style"
+           keep="true"
+           parent="controlBar_dockedThumbnails_bg"
+                 crop="0| 0|48|48"
+           onovercrop="0|48|48|48"
+           ondowncrop="0|96|48|48"
+           align="bottomright"
+           height="36"
+           width="36"
+           x="0" y="12"
+           zorder="1"
+           onhover="showTooltip('plugin',controlBar_dockedThumbnailsmenuTooltipStyle);"
+           onout="hideTooltip();"
+           />
+
+    <style name="controlBar_dockedThumbnails_btn_style"
+           keep="true"
+           parent="controlBar_dockedThumbnails_bg"
+                 crop="0| 0|48|48"
+           onovercrop="0|48|48|48"
+           ondowncrop="0|96|48|48"
+           align="bottomright"
+           height="36"
+           width="36"
+           x="0" y="12"
+           zorder="1"
+           onhover="showTooltip('plugin',controlBar_dockedThumbnailsmenuTooltipStyle);"
+           onout="hideTooltip();"
+           />
+    <style name="controlBar_dockedThumbnails_btn_style_off"
+           keep="true"
+           parent="controlBar_dockedThumbnails_bg"
+           align="bottomright"
+           height="36"
+           width="36"
+           x="0" y="12"
+           zorder="1"
+           onhover="showTooltip('plugin',controlBar_dockedThumbnailsmenuTooltipStyle);"
+           onout="hideTooltip();"
+           />
+
+
+    <style name="controlBar_dockedThumbnails_btn_style_on"
+            keep="true"
+            parent="controlBar_dockedThumbnails_bg"
+                  crop="0|48|48|48"
+            onovercrop="0|48|48|48"
+            ondowncrop="0|96|48|48"
+            align="bottomright"
+            height="36"
+            width="36"
+            y="12"
+            zorder="1"
+            onhover="showTooltip('plugin',controlBar_dockedThumbnailsmenuTooltipStyle);" 
+            onout="hideTooltip();"
+            />
+    <style name="controlBar_dockedThumbnails_btn_style_on_off"
+            keep="true"
+            parent="controlBar_dockedThumbnails_bg"
+            align="bottomright"
+            height="36"
+            width="36"
+            y="12"
+            zorder="1"
+            onhover="showTooltip('plugin',controlBar_dockedThumbnailsmenuTooltipStyle);" 
+            onout="hideTooltip();"
+            />
+
+
+  <events name="controlBar_dockedThumbnailsgyroscopeavailableevent"
+          ongyroscopeavailable="controlBar_dockedThumbnailsupdateGyroscopeButtonsAvailability();"
+          ongyroscopeunavailable="controlBar_dockedThumbnailsupdateGyroscopeButtonsAvailability();"
+          ongyroscopeon="controlBar_dockedThumbnailsenableGyroscopeButtons(true);"
+          ongyroscopeoff="controlBar_dockedThumbnailsenableGyroscopeButtons(false);"
+          keep="true" devices="html5" />
+  <krpano controlBar_dockedThumbnailsmenugyroscopeavailable="false" controlBar_dockedThumbnailsmenugyroscopeenabled="false"/>
+  <action name="controlBar_dockedThumbnailsupdateGyroscopeButtonsAvailability">
+    if (tour_gyroscopedevices,
+      set(controlBar_dockedThumbnailsmenugyroscopeavailable, true);
+      controlBar_dockedThumbnailsupdateGyroscopeButtons();
+    ,
+      set(controlBar_dockedThumbnailsmenugyroscopeavailable, false);
+      controlBar_dockedThumbnailsupdateGyroscopeButtons();
+    );
+  </action>
+  <action name="controlBar_dockedThumbnailsenableGyroscopeButtons">
+    if (tour_gyroscopedevices,
+      set(controlBar_dockedThumbnailsmenugyroscopeenabled, %1);
+      controlBar_dockedThumbnailsupdateGyroscopeButtons();
+    );
+  </action>
+	<action name="controlBar_dockedThumbnailsHideGyroscopeButtons">
+		set(layer[controlBar_dockedThumbnailsbtn_gyroscope_off].visible, false);
+		set(layer[controlBar_dockedThumbnailsbtn_gyroscope_on].visible, false);
+		
+		if('%1' == 'true' AND plugin[gyroscope],
+			set(layer[controlBar_dockedThumbnailsbtn_gyroscope_not].visible, true);
+			
+		,
+			set(layer[controlBar_dockedThumbnailsbtn_gyroscope_not].visible, false);
+			
+		);
+	</action>
+	<action name="controlBar_dockedThumbnailsShowGyroscopeButtons">
+		if (controlBar_dockedThumbnailsmenugyroscopeavailable,
+			if (controlBar_dockedThumbnailsmenugyroscopeenabled,
+				set(layer[controlBar_dockedThumbnailsbtn_gyroscope_off].visible, true);
+				set(layer[controlBar_dockedThumbnailsbtn_gyroscope_on].visible, false);
+				
+			,
+				set(layer[controlBar_dockedThumbnailsbtn_gyroscope_off].visible, false);
+				set(layer[controlBar_dockedThumbnailsbtn_gyroscope_on].visible, true);
+				
+			);
+			set(layer[controlBar_dockedThumbnailsbtn_gyroscope_not].visible, false);
+			
+		,
+			controlBar_dockedThumbnailsHideGyroscopeButtons(true);
+		);
+	</action>
+	<action name="controlBar_dockedThumbnailsupdateGyroscopeButtons">
+		if (tour_gyroscopedevices,
+			if (controlBar_dockedThumbnailsIsOpened,
+				controlBar_dockedThumbnailsShowGyroscopeButtons();
+			,
+				controlBar_dockedThumbnailsHideGyroscopeButtons();
+			);
+		,
+			if (controlBar_dockedThumbnailsIsOpened,
+				controlBar_dockedThumbnailsHideGyroscopeButtons(true);
+			,
+				controlBar_dockedThumbnailsHideGyroscopeButtons();
+			);
+		);
+	</action>
+	
+    <layer name="controlBar_dockedThumbnailsbtn_gyroscope_off"
+            url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_gyroscope.png"
+            style="controlBar_dockedThumbnails_btn_style_on"
+            onclick="disableGyroscope();
+"
+            devices="html5"
+            tooltip="controlBar_dockedThumbnailsgyroOffTip"
+            visible="false"
+            />
+    <layer name="controlBar_dockedThumbnailsbtn_gyroscope_on"
+            url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_gyroscope.png"
+            style="controlBar_dockedThumbnails_btn_style"
+            onclick="enableGyroscope();
+"
+            devices="html5"
+            tooltip="controlBar_dockedThumbnailsgyroOnTip"
+            visible="false"
+            />
+    <layer name="controlBar_dockedThumbnailsbtn_gyroscope_not"
+            url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_gyroscope_off.png"
+            style="controlBar_dockedThumbnails_btn_style_off"
+            enabled="true"
+            capture="false"
+            devices="html5"
+            tooltip="controlBar_dockedThumbnailsgyroNotTip"
+            visible="false"
+            />
+
+
+	<events name="controlBar_dockedThumbnailscontrolmodechangedevent" oncontrolmodechanged="controlBar_dockedThumbnailsupdateControlModeButtons();" keep="true"/>
+	<action name="controlBar_dockedThumbnailsHideControlModeButtons">
+		set(layer[controlBar_dockedThumbnailsbtn_ctrlmode_move_to].visible, false);
+		set(layer[controlBar_dockedThumbnailsbtn_ctrlmode_drag_to].visible, false);
+		
+	</action>
+	<action name="controlBar_dockedThumbnailsShowControlModeButtons">
+		if (tour_controlmodemousetype == "moveto",
+			set(layer[controlBar_dockedThumbnailsbtn_ctrlmode_drag_to].visible, true);
+			set(layer[controlBar_dockedThumbnailsbtn_ctrlmode_move_to].visible, false);
+			
+		,
+			set(layer[controlBar_dockedThumbnailsbtn_ctrlmode_move_to].visible, true);
+			set(layer[controlBar_dockedThumbnailsbtn_ctrlmode_drag_to].visible, false);
+			
+		);
+	</action>
+	<action name="controlBar_dockedThumbnailsupdateControlModeButtons">
+	if (device.desktop,
+		if (controlBar_dockedThumbnailsIsOpened,
+			controlBar_dockedThumbnailsShowControlModeButtons();
+		,
+			controlBar_dockedThumbnailsHideControlModeButtons();
+		);
+	,
+		controlBar_dockedThumbnailsHideControlModeButtons();
+	);
+	</action>
+	
+    <layer name="controlBar_dockedThumbnailsbtn_ctrlmode_move_to"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_move_to.png"
+           style="controlBar_dockedThumbnails_btn_style"
+           tooltip="controlBar_dockedThumbnailsctrlmodeMoveTip"
+           onclick="setControlModeMoveTo();
+"
+           visible="false"
+           devices="desktop"
+           />
+    <layer name="controlBar_dockedThumbnailsbtn_ctrlmode_drag_to"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_drag_to.png"
+           style="controlBar_dockedThumbnails_btn_style"
+           tooltip="controlBar_dockedThumbnailsctrlmodeDragTip"
+           onclick="setControlModeDragTo();
+"
+           visible="false"
+           devices="desktop"
+           />
+
+    <layer name="controlBar_dockedThumbnailsbtn_in"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_zoom_in.png"
+           style="controlBar_dockedThumbnails_btn_down_style"
+           ondown="viewControlZoomIn(false);"
+           onup="viewControlZoomStop();
+"
+           tooltip="controlBar_dockedThumbnailszoomInTip"
+           devices="desktop"
+           visible="false"
+           />
+    <layer name="controlBar_dockedThumbnailsbtn_out"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_zoom_out.png"
+           style="controlBar_dockedThumbnails_btn_down_style"
+           ondown="viewControlZoomOut(false);
+"
+           onup="viewControlZoomStop();
+"
+           tooltip="controlBar_dockedThumbnailszoomOutTip"
+           devices="desktop"
+           visible="false"
+           />
+
+    <layer name="controlBar_dockedThumbnailsbtn_left"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_move_left.png"
+           style="controlBar_dockedThumbnails_btn_down_style"
+           ondown="viewControlMoveLeft(false);
+"
+           onup="viewControlMoveHoriStop();
+"
+            tooltip="controlBar_dockedThumbnailsmoveLeftTip"
+           devices="desktop"
+           visible="false"
+           />
+    <layer name="controlBar_dockedThumbnailsbtn_right"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_move_right.png"
+           style="controlBar_dockedThumbnails_btn_down_style"
+           ondown="viewControlMoveRight(false);
+"
+           onup="viewControlMoveHoriStop();
+"
+            tooltip="controlBar_dockedThumbnailsmoveRightTip"
+           devices="desktop"
+           visible="false"
+           />
+
+    <layer name="controlBar_dockedThumbnailsbtn_up"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_move_up.png"
+           style="controlBar_dockedThumbnails_btn_down_style"
+           ondown="viewControlMoveUp(false);
+"
+           onup="viewControlMoveVertStop();
+"
+            tooltip="controlBar_dockedThumbnailsmoveUpTip"
+           devices="desktop"
+           visible="false"
+           />
+    <layer name="controlBar_dockedThumbnailsbtn_down"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_move_down.png"
+           style="controlBar_dockedThumbnails_btn_down_style"
+           ondown="viewControlMoveDown(false);
+"
+           onup="viewControlMoveVertStop();
+"
+            tooltip="controlBar_dockedThumbnailsmoveDownTip"
+           devices="desktop"
+           visible="false"
+           />
+
+
+
+
+
+
+
+
+
+    <layer name="controlBar_dockedThumbnailsbtn_openfs"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_enter_fs.png"
+           onclick="enterFullscreen();
+"
+           style="controlBar_dockedThumbnails_btn_style"
+           visible="false"
+           tooltip="controlBar_dockedThumbnailsopenFsTip"
+           devices="fullscreensupport"
+           />
+    <layer name="controlBar_dockedThumbnailsbtn_closefs"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_close_fs.png"
+           onclick="exitFullscreen();
+"
+           style="controlBar_dockedThumbnails_btn_style_on"
+           visible="false"
+           tooltip="controlBar_dockedThumbnailscloseFsTip"
+           devices="fullscreensupport"
+           />
+
+
+    <layer name="controlBar_dockedThumbnailsbtn_autotour_on"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_start_automatic_tour.png"
+           onclick="startautotour();
+"
+           style="controlBar_dockedThumbnails_btn_style"
+           visible="false"
+            tooltip="controlBar_dockedThumbnailsautotourOnTip"
+           />
+    <layer name="controlBar_dockedThumbnailsbtn_autotour_off"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_stop_automatic_tour.png"
+           onclick="stopautotour();
+"
+           style="controlBar_dockedThumbnails_btn_style_on"
+           visible="false"
+           tooltip="controlBar_dockedThumbnailsautotourOffTip"
+           />
+
+
+    <layer name="controlBar_dockedThumbnailsbtn_display_help"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_help.png"
+           onclick="controlBar_dockedThumbnailsdisplayHelp();"
+           style="controlBar_dockedThumbnails_btn_style"
+           tooltip="controlBar_dockedThumbnailsdisplayHelpTip"
+           devices="desktop"
+           visible="false"
+           />
+    <layer name="controlBar_dockedThumbnailsbtn_close_help"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_help.png"
+           onclick="controlBar_dockedThumbnailscloseHelp();"
+           style="controlBar_dockedThumbnails_btn_style_on"
+           visible="false"
+           tooltip="controlBar_dockedThumbnailshideHelpTip"
+           devices="desktop"
+           />
+
+
+
+    <layer name="controlBar_dockedThumbnailsbtn_hidecontrols"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_hide_controls.png"
+           style="controlBar_dockedThumbnails_btn_style"
+           onclick="controlBar_dockedThumbnailshideMenuControls();hideTourControls();
+"
+           visible="false"
+            tooltip="controlBar_dockedThumbnailshideControlsTip"
+           />
+
+    <layer name="controlBar_dockedThumbnailsbtn_showcontrols"
+                  crop="0| 0|48|48"
+            onovercrop="0|48|48|48"
+            ondowncrop="0|96|48|48"
+            keep="true"
+            url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_show_controls_bg.png"
+            align="bottomright"
+            zorder="4"
+            height="36"
+            width="36"
+            visible="false"
+            y="12"
+            x="0" >
+    <layer name="controlBar_dockedThumbnailsbtn_showcontrols_fg"
+                  crop="0| 0|48|48"
+            onovercrop="0|48|48|48"
+            ondowncrop="0|96|48|48"
+            onclick="controlBar_dockedThumbnailsshowMenuControls();showTourControls();
+"
+            onhover="showTooltip('plugin',controlBar_dockedThumbnailsmenuTooltipStyle);"
+            onout="hideTooltip();"
+            tooltip="controlBar_dockedThumbnailsdisplayControlsTip"
+            keep="true"
+            url="%FIRSTXML%/graphics/dockedthumbscontrolbar/btn_show_controls.png"
+            align="center"
+            height="36"
+            width="36"
+            />
+    </layer>
+
+
+<action name="controlBar_dockedThumbnailshideMenuControls">
+	set(controlBar_dockedThumbnailsIsOpened, false);
+	set(layer[controlBar_dockedThumbnails_bg].visible, false);
+	set(layer[controlBar_dockedThumbnailsbtn_showcontrols].visible, true);
+	
+	set(layer[controlBar_dockedThumbnailsbtn_hidecontrols].visible, false);
+	set(layer[controlBar_dockedThumbnailsbtn_in].visible, false);
+	set(layer[controlBar_dockedThumbnailsbtn_out].visible, false);
+	set(layer[controlBar_dockedThumbnailsbtn_right].visible, false);
+	set(layer[controlBar_dockedThumbnailsbtn_left].visible, false);
+	set(layer[controlBar_dockedThumbnailsbtn_down].visible, false);
+	set(layer[controlBar_dockedThumbnailsbtn_up].visible, false);
+
+		controlBar_dockedThumbnailsupdateGyroscopeButtons();
+		controlBar_dockedThumbnailsupdateAutotourButtons();
+
+		controlBar_dockedThumbnailsupdateControlModeButtons();
+		controlBar_dockedThumbnailsupdateFullscreenButtons();
+		controlBar_dockedThumbnailsupdateHelpButtons();
+</action>
+<action name="controlBar_dockedThumbnailsshowMenuControls">
+	set(controlBar_dockedThumbnailsIsOpened, true);
+      controlBar_dockedThumbnailsupdateFullscreenButtons();
+
+      controlBar_dockedThumbnailsupdateAutotourButtons();
+      controlBar_dockedThumbnailsupdateGyroscopeButtons();
+
+      controlBar_dockedThumbnailsupdateControlModeButtons();
+      controlBar_dockedThumbnailsupdateHelpButtons();
+      set(layer[controlBar_dockedThumbnails_bg].visible, true);
+	set(layer[controlBar_dockedThumbnailsbtn_showcontrols].visible, false);
+	
+	set(layer[controlBar_dockedThumbnailsbtn_hidecontrols].visible, true);
+	set(layer[controlBar_dockedThumbnailsbtn_in].visible, true);
+	set(layer[controlBar_dockedThumbnailsbtn_out].visible, true);
+	set(layer[controlBar_dockedThumbnailsbtn_right].visible, true);
+	set(layer[controlBar_dockedThumbnailsbtn_left].visible, true);
+	set(layer[controlBar_dockedThumbnailsbtn_down].visible, true);
+	set(layer[controlBar_dockedThumbnailsbtn_up].visible, true);
+	
+	
+</action>
+
+
+    <layer name="controlBar_dockedThumbnailshelpScreenBg" align="center" keep="true" onclick="controlBar_dockedThumbnailscloseHelp();"
+           url="%FIRSTXML%/graphics/dockedthumbscontrolbar/help_screen_bg.png"
+           visible="false"
+           zorder="97"
+           >
+      <layer name="controlBar_dockedThumbnailshelpScreen" align="center" keep="true" onclick="controlBar_dockedThumbnailscloseHelp();" 
+             url="%FIRSTXML%/graphics/dockedthumbscontrolbar/help_screen_fg.png"
+             height="100%" 
+             width="prop" 
+             displayed="false"
+             />
+    </layer>
+    <action name="controlBar_dockedThumbnailsdisplayHelp">
+      if (device.desktop,
+        set(layer[controlBar_dockedThumbnailshelpScreen].displayed, true);
+        set(layer[controlBar_dockedThumbnailshelpScreenBg].visible,true);
+        controlBar_dockedThumbnailsupdateHelpButtons();
+      );
+    </action>
+    <action name="controlBar_dockedThumbnailscloseHelp">
+      if (device.desktop,
+        set(layer[controlBar_dockedThumbnailshelpScreen].displayed, false);
+        set(layer[controlBar_dockedThumbnailshelpScreenBg].visible,false);
+        controlBar_dockedThumbnailsupdateHelpButtons();
+      );
+    </action>
+	<action name="controlBar_dockedThumbnailsHideHelpButtons">
+		set(layer[controlBar_dockedThumbnailsbtn_display_help].visible, false);
+		set(layer[controlBar_dockedThumbnailsbtn_close_help].visible, false);
+		
+	</action>
+	<action name="controlBar_dockedThumbnailsShowHelpButtons">
+		if (layer[controlBar_dockedThumbnailshelpScreen].displayed,
+			set(layer[controlBar_dockedThumbnailsbtn_close_help].visible, true);
+			set(layer[controlBar_dockedThumbnailsbtn_display_help].visible, false);
+			
+		,
+			set(layer[controlBar_dockedThumbnailsbtn_display_help].visible, true);
+			set(layer[controlBar_dockedThumbnailsbtn_close_help].visible, false);
+			
+		);
+	</action>
+	<action name="controlBar_dockedThumbnailsupdateHelpButtons">
+	if (device.desktop,
+		if (controlBar_dockedThumbnailsIsOpened,
+			controlBar_dockedThumbnailsShowHelpButtons();
+		,
+			controlBar_dockedThumbnailsHideHelpButtons();
+		);
+	,
+		controlBar_dockedThumbnailsHideHelpButtons();
+	);
+	</action>
+    
+
+
+	<events name="controlBar_dockedThumbnailsmenufullscreenchangeevent"
+		onenterfullscreen="controlBar_dockedThumbnailsupdateFullscreenButtons();"
+		onexitfullscreen="controlBar_dockedThumbnailsupdateFullscreenButtons();"
+		keep="true"/>
+	<action name="controlBar_dockedThumbnailsHideFullscreenButtons">
+		set(layer[controlBar_dockedThumbnailsbtn_openfs].visible , false);
+		set(layer[controlBar_dockedThumbnailsbtn_closefs].visible, false);
+		
+	</action>
+	<action name="controlBar_dockedThumbnailsShowFullscreenButtons">
+		if (device.fullscreensupport,
+			if(tour_fullscreen,
+				set(layer[controlBar_dockedThumbnailsbtn_openfs].visible , false);
+				set(layer[controlBar_dockedThumbnailsbtn_closefs].visible, true);
+				
+			,
+				set(layer[controlBar_dockedThumbnailsbtn_openfs].visible ,true);
+				set(layer[controlBar_dockedThumbnailsbtn_closefs].visible,false);
+				
+			);
+		,
+			controlBar_dockedThumbnailsHideFullscreenButtons();
+		);
+	</action>
+	<action name="controlBar_dockedThumbnailsupdateFullscreenButtons">
+		if (controlBar_dockedThumbnailsIsOpened,
+			controlBar_dockedThumbnailsShowFullscreenButtons();
+		,
+			controlBar_dockedThumbnailsHideFullscreenButtons();
+		);
+	</action>
+
+
+	<events name="controlBar_dockedThumbnailsAutotourEvents"
+		onstartautotour="controlBar_dockedThumbnailsupdateAutotourButtons();"
+		onstopautotour="controlBar_dockedThumbnailsupdateAutotourButtons();"
+		keep="true"/>
+	<action name="controlBar_dockedThumbnailsHideAutotourButtons">
+		set(layer[controlBar_dockedThumbnailsbtn_autotour_off].visible, false);
+		set(layer[controlBar_dockedThumbnailsbtn_autotour_on].visible , false);
+		
+	</action>
+	<action name="controlBar_dockedThumbnailsShowAutotourButtons">
+		if (tour_autotourenabled == false,
+			set(layer[controlBar_dockedThumbnailsbtn_autotour_off].visible, false);
+			set(layer[controlBar_dockedThumbnailsbtn_autotour_on].visible , true);
+			
+		,
+			set(layer[controlBar_dockedThumbnailsbtn_autotour_off].visible, true);
+			set(layer[controlBar_dockedThumbnailsbtn_autotour_on].visible , false);
+			
+		);
+	</action>
+	<action name="controlBar_dockedThumbnailsupdateAutotourButtons">
+		if (controlBar_dockedThumbnailsIsOpened,
+			controlBar_dockedThumbnailsShowAutotourButtons();
+		,
+			controlBar_dockedThumbnailsHideAutotourButtons();
+		);
+	</action>
+
+
+	<layer name="controlBar_dockedThumbnailsmenuTooltipStyle"
+	keep="true"
+	enabled="false"
+	capture="false"
+	url="%FIRSTXML%/graphics/textfield.swf"
+	align="center"
+	background="true"
+	backgroundcolor="0xffffff"
+	backgroundalpha="0.80000000000000004"
+	border="false"
+	css="color:#555555;font-family:Times New Roman;font-weight:bold;font-size:14px;text-align:left;"
+	height="20"
+	autoheight="true"
+	autowidth="auto"
+	edge="bottom"
+	selectable="false"
+	zorder="0"
+	padding="2"
+	xoffset="0"
+	yoffset="0"
+	visible="false"
+	html=""
+	/>
+
+
+<!-- ********** -->
+<!-- Menú contextual -->
+<!-- id : contextmenu -->
+<!-- ********** -->
+  <contextmenu fullscreen="false" versioninfo="false" touch="true">
+    <item name="normal"        onclick="setViewNormal();
+" separator="true"/>
+    <item name="fisheye"       onclick="setViewFisheye();
+"/>
+    <item name="architectural" onclick="setViewArchitectural();
+"/>
+    <item name="littleplanet"  onclick="setViewLittlePlanet();
+"/>
+    <item name="fullscreenentry" onclick="enterFullscreen();
+" separator="true"/>
+  </contextmenu>
+
+  <events name="contextmenuevents" keep="true" 
+    onenterfullscreen="updateContextMenu" onexitfullscreen="updateContextMenu" 
+    onxmlcomplete="updateContextMenu" 
+    changetourlanguage="updateContextMenu" 
+    />
+  <events name="contextmenuvrevents" keep="true" 
+    onvravailable="updateContextMenu();" onvrunavailable="updateContextMenu();"
+    devices="html5"
+    />
+  <action name="updateContextMenu">
+    getmessage(contextmenu.item[normal].caption, contextmenunormallabel);
+    getmessage(contextmenu.item[architectural].caption, contextmenuarchitecturallabel);
+    set(sceneisfull360, false);
+    if(scene[get(xml.scene)].full360,
+      sub(viewhfov, panoview.hmax, panoview.hmin);
+      if (viewhfov == 360,
+        sub(viewvfov, panoview.vmax, panoview.vmin);
+        if (viewvfov == 180,
+          set(sceneisfull360, true);
+        );
+      );
+    );
+    if (sceneisfull360 AND (device.webgl OR device.flash),
+      set(contextmenu.item[fisheye].visible, true);
+      getmessage(contextmenu.item[fisheye].caption, contextmenufisheyelabel);
+      set(contextmenu.item[littleplanet].visible, true);
+      getmessage(contextmenu.item[littleplanet].caption, contextmenulittleplanetlabel);
+    ,
+      set(contextmenu.item[fisheye].visible, false);
+      set(contextmenu.item[littleplanet].visible, false);
+    );
+    if (device.fullscreensupport,
+      if(tour_fullscreen,
+        getmessage(contextmenu.item[fullscreenentry].caption, contextmenucloseFsLabel);
+        set(contextmenu.item[fullscreenentry].onclick, exitFullscreen();
+);
+       ,
+        getmessage(contextmenu.item[fullscreenentry].caption, contextmenuopenFsLabel);
+        set(contextmenu.item[fullscreenentry].onclick, enterFullscreen();
+);
+      );
+     ,
+      set(contextmenu.item[fullscreenentry].visible, false);
+    );
+  </action>
+
+<!-- ********** -->
+<!-- Barra de progreso y rueda giratoria -->
+<!-- id : progressbar -->
+<!-- ********** -->
+
+  <progress showwait.flash="loopings(
+				0xffffff,
+				15,15,
+				0,0,
+				0xffffff,0,
+				0,0,center
+				)"
+			showreloads.flash="false"
+			parent=""
+			/>
+
+
+  <layer name="progressbar_bg"
+    align="bottom"
+    bgcolor="0xffffff"
+    bgalpha="1.0"
+    bgborder="0"
+    onclick="progressbar_stop();"
+    enabled="true"
+    handcursor="false"
+    bgcapture="true"
+    x="0" y="0"
+    type="container"
+    width="100%" height="5"
+    visible="true"
+    keep="true">
+      <layer name="progressbar_bar" 
+        align="topleft"
+        bgcolor="0x555555"
+        bgalpha="1.0"
+        x="0" y="0"
+        type="container"
+        width="0%"
+        height="100%"
+        enabled="false"
+        keep="true"
+        />
+  </layer>
+  <action name="progressbar_start">
+    if(scene[get(xml.scene)].video,
+      progressbar_stop();
+    ,
+      mul(progress_val, get(progress.progress), 100);
+      txtadd(progress_percent, get(progress_val),"%");
+      set(layer[progressbar_bar].width, get(progress_percent));
+    if (device.html5, 
+      mul(xcrop, layer[progressbarwheel].frame, 64);
+      txtadd(layer[progressbarwheel].crop, get(xcrop), '|0|64|64');
+      
+      inc(layer[progressbarwheel].frame);
+      if(layer[progressbarwheel].frame GE layer[progressbarwheel].frames, set(layer[progressbarwheel].frame,0));
+    );
+      delayedcall(progressbar_progresscall, 0.1,progressbar_start());
+      if(progress_val == 100,
+        progressbar_stop();
+      );
+    );
+  </action>
+  <action name="progressbar_stop">
+    stopdelayedcall(progressbar_progresscall);
+    set(layer[progressbar_bg].visible, false);
+    set(layer[progressbar_bar].width, "0%");
+    if (device.html5, set(layer[progressbarwheel].visible, false););
+  </action>
+  <events name="progressbar_events" onloadcomplete="progressbar_stop();" onxmlcomplete="if (device.html5,set(layer[progressbarwheel].visible, true););set(layer[progressbar_bg].visible, true);progressbar_start();" keep="true" />
+
+  <!-- loading wheel -->
+  <layer name="progressbarwheel"
+         keep="true"
+         devices="html5"
+         visible="false"
+         url="%FIRSTXML%/graphics/progressbarandloopings/loadingwheel.png"
+         crop="0|0|64|64"
+         align="center"
+         x="0" y="0"
+         frame="0" frames="12"
+         width="30"
+         height="30" />
+
+<!-- ********** -->
+<!-- Panorama Title -->
+<!-- id : title -->
+<!-- ********** -->
+
+  <events name="title_events" 
+    onTourStart="showtitle();"
+    hidetourcontrols="hidetitle();" 
+    showtourcontrols="showtitle();" 
+    onnewpano="updatetitle();"
+    changetourlanguage="changeLanguagetitle"
+    keep="true" />
+
+  <action name="hidetitle">set(layer[title].visible, false);</action>
+  <action name="showtitle">set(layer[title].visible, true );</action>
+
+  <action name="changeLanguagetitle">
+    updatetitle();
+  </action>
+
+  <action name="updatetitle">
+    getmessage(layer[title].html, get(scene[get(xml.scene)].titleid));
+    escape(layer[title].html);
+  </action>
+  <layer name="title" keep="true" zorder="8"
+         url="%FIRSTXML%/graphics/textfield.swf"
+         align="bottomleft" x="10" y="15" width="100%" autoheight="true"
+         background="false" capture="false" handcursor="false" selectable="false" enabled="false"
+         borderwidth="0"
+         alpha="1"
+         visible="false"
+         css="text-align:left;
+              color:#000000;
+              font-family:Arial;
+              font-size:28px;"/>
+
+<action name="setViewNormal">
+	stopSetViewTweens();
+	if(current_view_isflat === true,
+		setViewNonFlat(VFOV);
+	);
+	setViewNormalComplete();
+</action>
+
+<action name="setViewNormalComplete">
+	set(view.fisheyefovlink, 0.5);
+	set(view.fovmax, get(panoview.fovmax));
+	tween(view.architectural, 0.0, distance(1.0, 0.45));
+	tween(view.pannini, 0.0, distance(1.0, 0.45), easeOutQuad, if(panniniViewActivated,restoreViewFromPannini();););
+	tween(view.vlookat, get(panoview.v), distance(90, 0.45));
+	tween(view.fov, get(panoview.fov), distance(50, 0.45));
+	tween(view.fisheye, 0.0, distance(1.0, 0.45),
+		set(view.stereographic,false);
+	);
+</action>
+
+<krpano normalViewActivated="true" />
+<action name="stopSetViewTweens">
+	stoptween(view.fov);
+	stoptween(view.vlookat);
+	stoptween(view.fisheye);
+	stoptween(view.architectural);
+	stoptween(view.pannini);
+</action>
+
+  <!-- Fullscreen Management -->
+  <action name="exitFullScreen" devices="fullscreensupport">set(tour_fullscreen,false);set(fullscreen,false);</action>
+  <action name="enterFullScreen" devices="fullscreensupport">set(tour_fullscreen,true);set(fullscreen,true);</action>
+  <action name="switchFullScreen">if(tour_fullscreen,exitFullScreen();,enterFullScreen(););</action>
+
+  
+  <events name="krpanoExitFullscreenEvent"
+    onexitfullscreen="if(tour_fullscreen,exitFullScreenChangeEvent(););"
+    keep="true" />
+
+  <action name="exitFullScreenChangeEvent" devices="fullscreensupport">set(tour_fullscreen,false);events.dispatch(onexitfullscreen);</action>
+
+<action name="setViewLittlePlanet">
+	set(sceneisfull360, false);
+	if(scene[get(xml.scene)].full360,
+		sub(viewhfov, panoview.hmax, panoview.hmin);
+		if (viewhfov == 360,
+			sub(viewvfov, panoview.vmax, panoview.vmin);
+			if (viewvfov == 180,
+				set(sceneisfull360, true);
+			);
+		);
+	);
+	if (sceneisfull360 AND (device.webgl OR device.flash),
+		if(normalViewActivated,stopSetViewTweens(););
+		if(current_view_isflat === true,
+			setViewNonFlat(VFOV);
+		);
+		setViewLittlePlanetComplete();
+	);
+</action>
+
+<action name="setViewLittlePlanetComplete">
+	set(backtonormalfirst,false);
+	if(view.pannini GE 1.0, set(backtonormalfirst,true));
+	if(view.stereographic == false, set(backtonormalfirst,true));
+	if(backtonormalfirst, hideTooltip();tween(view.fisheye, 0.0 ,distance(1.0, 0.25), easeOutQuad, WAIT); );
+	set(view.stereographic, true);
+	set(view.fisheyefovlink, 1.5);
+	tween(view.architectural, 0.0, 0.25);
+	tween(view.vlookat, 90, distance(179, 1.50));
+	tween(view.pannini, 0.0, distance(1.0, 0.75), easeOutQuad, if(panniniViewActivated,restoreViewFromPannini();););
+	if(panoview.fovmax LE 150, set(view.fovmax, 150); , set(view.fovmax, get(panoview.fovmax)); );
+	tween(view.fisheye, 1.0, distance(1.0, 0.75));
+	tween(view.fov, 150, distance(179, 0.75));
+</action>
+
+<action name="viewControlMoveUp">
+	if(%1,
+		if(%2,
+			set(isfullvertical, false);
+			ifnot(scene[get(xml.scene)].planar,
+				sub(viewvfov, panoview.vmax, panoview.vmin);
+				if (viewvfov == 180,
+					set(isfullvertical, true);
+				);
+			);
+			if(isfullvertical == false AND calc(view.vlookat-%2) LT view.vlookatmin,
+				moveto(get(view.hlookat), get(view.vlookatmin));
+			,
+				moveto(get(view.hlookat), calc(view.vlookat-%2));
+			);
+		,
+			set(vlookat_moveforce, -1);
+			delayedcall(0.1, viewControlMoveVertStop());
+		);
+	,
+		set(vlookat_moveforce, -1);
+	);
+</action>
+<action name="viewControlMoveDown">
+	if(%1,
+		if(%2,
+			set(isfullvertical, false);
+			ifnot(scene[get(xml.scene)].planar,
+				sub(viewvfov, panoview.vmax, panoview.vmin);
+				if (viewvfov == 180,
+					set(isfullvertical, true);
+				);
+			);
+			if(sceneisfull360 == false AND calc(view.vlookat+%2) GT view.vlookatmax,
+				moveto(get(view.hlookat), get(view.vlookatmax));
+			,
+				moveto(get(view.hlookat), calc(view.vlookat+%2));
+			);
+		,
+			set(vlookat_moveforce, +1);
+			delayedcall(0.1, viewControlMoveVertStop());
+		);
+	,
+		set(vlookat_moveforce, +1);
+	);
+</action>
+<action name="viewControlMoveLeft">
+	if(%1,
+		if(%2,
+			set(isfullhorizontal, false);
+			ifnot(scene[get(xml.scene)].planar,
+				sub(viewhfov, panoview.hmax, panoview.hmin);
+				if (viewhfov == 360,
+					set(isfullhorizontal, true);
+				);
+			);
+			if(isfullhorizontal == false AND calc(view.hlookat-%2) LT view.hlookatmin,
+				moveto(get(view.hlookatmin), get(view.vlookat));
+			,
+				moveto(calc(view.hlookat-%2), get(view.vlookat));
+			);
+		,
+			set(hlookat_moveforce, -1);
+			delayedcall(0.1, viewControlMoveHoriStop());
+		);
+	,
+		set(hlookat_moveforce, -1);
+	);
+</action>
+<action name="viewControlMoveRight">
+	if(%1,
+		if(%2,
+			set(isfullhorizontal, false);
+			ifnot(scene[get(xml.scene)].planar,
+				sub(viewhfov, panoview.hmax, panoview.hmin);
+				if (viewhfov == 360,
+					set(isfullhorizontal, true);
+				);
+			);
+			if(isfullhorizontal == false AND calc(view.hlookat+%2) GT view.hlookatmax,
+				moveto(get(view.hlookatmax), get(view.vlookat));
+			,
+				moveto(calc(view.hlookat+%2), get(view.vlookat));
+			);
+		,
+			set(hlookat_moveforce, +1);
+			delayedcall(0.1, viewControlMoveHoriStop());
+			
+		);
+	,
+		set(hlookat_moveforce, +1);
+	);
+</action>
+<action name="viewControlMoveHoriStop">
+	set(hlookat_moveforce, 0);
+</action>
+<action name="viewControlMoveVertStop">
+	set(vlookat_moveforce, 0);
+</action>
+
+  <!-- Hide / Show Controls -->
+  <action name="hideTourControls">set(tour_displaycontrols, false);events.dispatch(hidetourcontrols);</action>
+  <action name="showTourControls">set(tour_displaycontrols, true); events.dispatch(showtourcontrols);</action>
+
+
+  <action name="enableGyroscope">
+    changeGyroscopeState(true);
+  </action>
+  <action name="disableGyroscope">
+    changeGyroscopeState(false);
+  </action>
+
+
+<action name="setViewFisheye">
+	set(sceneisfull360, false);
+	if(scene[get(xml.scene)].full360,
+		sub(viewhfov, panoview.hmax, panoview.hmin);
+		if (viewhfov == 360,
+			sub(viewvfov, panoview.vmax, panoview.vmin);
+			if (viewvfov == 180,
+				set(sceneisfull360, true);
+			);
+		);
+	);
+	if (sceneisfull360 AND (device.webgl OR device.flash),
+		if(normalViewActivated,stopSetViewTweens(););
+		if(current_view_isflat === true,
+			setViewNonFlat(VFOV);
+		);
+		setViewFisheyeComplete();
+	);
+</action>
+
+<action name="setViewFisheyeComplete">
+	set(view.fisheyefovlink, 1.5);
+	set(view.fovmax, get(panoview.fovmax));
+	tween(view.architectural, 0.0, distance(1.0, 0.30));
+	tween(view.fisheye, 0.0, distance(1.0, 0.30), easeOutQuad,
+		set(view.stereographic,false);
+		tween(view.fisheye, 0.45, distance(1.0, 0.75));
+		tween(view.vlookat, get(panoview.v), distance(90, 0.45));
+	);
+	tween(view.pannini, 0.0, distance(1.0, 0.75), easeOutQuad, if(panniniViewActivated,restoreViewFromPannini();););
+	tween(view.fov, get(panoview.fov), distance(50, 0.45));
+</action>
+
+<action name="viewControlZoomIn">
+	if(%1,
+		if(%2,
+			if(%2 LT view.fovmin,
+				zoomto(get(view.fovmin));
+			,
+				if(%2 LT view.fov,
+					zoomto(%2);
+				);
+			);
+		,
+			set(fov_moveforce, -1);
+			delayedcall(0.1, viewControlZoomStop());
+		);
+	,
+		set(fov_moveforce, -1);
+	);
+</action>
+<action name="viewControlZoomOut">
+	if(%1,
+		if(%2,
+			if(%2 GT view.fovmax,
+				zoomto(get(view.fovmax));
+			,
+				if(%2 GT view.fov,
+					zoomto(%2);
+				);
+			);
+		,
+			set(fov_moveforce, +1);
+			delayedcall(0.1, viewControlZoomStop());
+		);
+	,
+		set(fov_moveforce, +1);
+	);
+</action>
+<action name="viewControlZoomStop">
+	set(fov_moveforce, 0);
+</action>
+
+<action name="setViewArchitectural">
+	if(normalViewActivated,stopSetViewTweens(););
+	if(current_view_isflat === true,
+		setViewNonFlat(VFOV);
+	);
+	setViewArchitecturalComplete();
+</action>
+
+<action name="setViewArchitecturalComplete">
+	set(view.fovmax, get(panoview.fovmax));
+	set(view.fisheyefovlink, 0.5);
+	tween(view.architectural, 1.0, distance(1.0, 0.45));
+	tween(view.pannini, 0.0, distance(1.0, 0.45), easeOutQuad, if(panniniViewActivated,restoreViewFromPannini();););
+	tween(view.fisheye, 0.0, distance(1.0, 0.45), easeOutQuad, 
+		set(view.stereographic,false);
+		tween(view.vlookat, get(panoview.v), distance(90, 0.45));
+	);
+	tween(view.fov, get(panoview.fov), distance(50, 0.45));
+</action>
+
+</krpano>
